@@ -10,14 +10,15 @@ let package = Package(
             targets: ["X3DH"]),
     ],
     dependencies: [
-        // .package(url: /* package url */, from: "1.0.0"),
+         .package(url: "https://github.com/jedisct1/swift-sodium", from: "0.8.0"),
+         .package(url: "git@github.com:AnbionApps/HKDF.git", from: "1.0.0"),
     ],
     targets: [
         .target(
             name: "X3DH",
-            dependencies: []),
+            dependencies: ["Sodium", "HKDF"]),
         .testTarget(
             name: "X3DHTests",
-            dependencies: ["X3DH"]),
+            dependencies: ["X3DH", "Sodium"]),
     ]
 )
