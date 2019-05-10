@@ -2,8 +2,8 @@ import Sodium
 import HKDF
 
 public typealias Signatur = Bytes
-public typealias PreKeySigner = (PublicKey) -> Signatur
-public typealias PreKeySignatureVerifier = (Signatur) -> Bool
+public typealias PrekeySigner = (PublicKey) -> Signatur
+public typealias PrekeySignatureVerifier = (Signatur) -> Bool
 
 public class X3DH {
     let sodium = Sodium()
@@ -38,7 +38,7 @@ public class X3DH {
         self.keyMaterial = KeyMaterial(identityKeyPair: identityKeyPair, signedPrekeyPair: signedPrekeyPair)
     }
 
-    func createPrekeyBundle(oneTimePrekeysCount: Int, renewSignedPrekey: Bool, preKeySigner: PreKeySigner) throws -> PublicKeyMaterial {
+    func createPrekeyBundle(oneTimePrekeysCount: Int, renewSignedPrekey: Bool, prekeySigner: PrekeySigner) throws -> PublicKeyMaterial {
         if renewSignedPrekey {
             guard let newSignedPrekeyPair = sodium.keyExchange.keyPair() else { throw X3DHError.keyGenerationFailed }
             keyMaterial.signedPrekeyPair = newSignedPrekeyPair
@@ -52,11 +52,11 @@ public class X3DH {
         keyMaterial.oneTimePrekeyPairs = oneTimePrekeyPairs
         let oneTimePrekeyPublicKeys = oneTimePrekeyPairs.map { $0.publicKey }
 
-        let prekeySignature = preKeySigner(keyMaterial.signedPrekeyPair.publicKey)
+        let prekeySignature = prekeySigner(keyMaterial.signedPrekeyPair.publicKey)
         return PublicKeyMaterial(identityKey: keyMaterial.identityKeyPair.publicKey, signedPrekey: keyMaterial.signedPrekeyPair.publicKey, prekeySignature: prekeySignature, oneTimePrekeys: oneTimePrekeyPublicKeys)
     }
 
-    func initiateKeyAgreement(remotePrekeyBundle: PrekeyBundle, prekeySignatureVerifier: PreKeySignatureVerifier, info: String) throws -> KeyAgreementInitiation {
+    func initiateKeyAgreement(remotePrekeyBundle: PrekeyBundle, prekeySignatureVerifier: PrekeySignatureVerifier, info: String) throws -> KeyAgreementInitiation {
         guard prekeySignatureVerifier(remotePrekeyBundle.prekeySignature) else {
             throw X3DHError.invalidPrekeySignature
         }
