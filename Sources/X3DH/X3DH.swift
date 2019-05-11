@@ -3,7 +3,7 @@ import Sodium
 import HKDF
 
 public typealias Signatur = Data
-public typealias PrekeySigner = (PublicKey) -> Signatur
+public typealias PrekeySigner = (PublicKey) throws -> Signatur
 public typealias PrekeySignatureVerifier = (Signatur) -> Bool
 
 public class X3DH {
@@ -53,7 +53,7 @@ public class X3DH {
         keyMaterial.oneTimePrekeyPairs = oneTimePrekeyPairs
         let oneTimePrekeyPublicKeys = oneTimePrekeyPairs.map { $0.publicKey }
 
-        let prekeySignature = prekeySigner(keyMaterial.signedPrekeyPair.publicKey)
+        let prekeySignature = try prekeySigner(keyMaterial.signedPrekeyPair.publicKey)
         return PublicKeyMaterial(identityKey: keyMaterial.identityKeyPair.publicKey, signedPrekey: keyMaterial.signedPrekeyPair.publicKey, prekeySignature: prekeySignature, oneTimePrekeys: oneTimePrekeyPublicKeys)
     }
 
