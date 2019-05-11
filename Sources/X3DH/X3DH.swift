@@ -38,7 +38,7 @@ public class X3DH {
         self.keyMaterial = KeyMaterial(identityKeyPair: identityKeyPair, signedPrekeyPair: signedPrekeyPair)
     }
 
-    func createPrekeyBundle(oneTimePrekeysCount: Int, renewSignedPrekey: Bool, prekeySigner: PrekeySigner) throws -> PublicKeyMaterial {
+    public func createPrekeyBundle(oneTimePrekeysCount: Int, renewSignedPrekey: Bool, prekeySigner: PrekeySigner) throws -> PublicKeyMaterial {
         if renewSignedPrekey {
             guard let newSignedPrekeyPair = sodium.keyExchange.keyPair() else { throw X3DHError.keyGenerationFailed }
             keyMaterial.signedPrekeyPair = newSignedPrekeyPair
@@ -56,7 +56,7 @@ public class X3DH {
         return PublicKeyMaterial(identityKey: keyMaterial.identityKeyPair.publicKey, signedPrekey: keyMaterial.signedPrekeyPair.publicKey, prekeySignature: prekeySignature, oneTimePrekeys: oneTimePrekeyPublicKeys)
     }
 
-    func initiateKeyAgreement(remotePrekeyBundle: PrekeyBundle, prekeySignatureVerifier: PrekeySignatureVerifier, info: String) throws -> KeyAgreementInitiation {
+    public func initiateKeyAgreement(remotePrekeyBundle: PrekeyBundle, prekeySignatureVerifier: PrekeySignatureVerifier, info: String) throws -> KeyAgreementInitiation {
         guard prekeySignatureVerifier(remotePrekeyBundle.prekeySignature) else {
             throw X3DHError.invalidPrekeySignature
         }
@@ -77,7 +77,7 @@ public class X3DH {
         return KeyAgreementInitiation(sharedSecret: sk, associatedData: ad, identityPublicKey: keyMaterial.identityKeyPair.publicKey, ephemeralPublicKey: ephemeralKeyPair.publicKey, usedOneTimePrekey: remotePrekeyBundle.oneTimePrekey)
     }
 
-    func sharedSecretFromKeyAgreement(remoteIdentityPublicKey: PublicKey, remoteEphemeralPublicKey: PublicKey, usedOneTimePrekey: PublicKey?, info: String) throws -> Bytes {
+    public func sharedSecretFromKeyAgreement(remoteIdentityPublicKey: PublicKey, remoteEphemeralPublicKey: PublicKey, usedOneTimePrekey: PublicKey?, info: String) throws -> Bytes {
         let dh1 = DH(ownKeyPair: keyMaterial.signedPrekeyPair, remotePublicKey: remoteIdentityPublicKey)
         let dh2 = DH(ownKeyPair: keyMaterial.identityKeyPair, remotePublicKey: remoteEphemeralPublicKey)
         let dh3 = DH(ownKeyPair: keyMaterial.signedPrekeyPair, remotePublicKey: remoteEphemeralPublicKey)
