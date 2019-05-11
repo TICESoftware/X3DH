@@ -1,3 +1,4 @@
+import Foundation
 import XCTest
 @testable import X3DH
 
@@ -7,7 +8,7 @@ final class X3DHTests: XCTestCase {
             let info = "testKeyAgreement"
 
             let bob = try X3DH()
-            var bobPublicKeyMaterial = try bob.createPrekeyBundle(oneTimePrekeysCount: 2, renewSignedPrekey: false, prekeySigner: { $0 })
+            var bobPublicKeyMaterial = try bob.createPrekeyBundle(oneTimePrekeysCount: 2, renewSignedPrekey: false, prekeySigner: { Data($0) })
             let bobPrekeyBundle = bobPublicKeyMaterial.prekeyBundle()
 
             let alice = try X3DH()
@@ -29,7 +30,7 @@ final class X3DHTests: XCTestCase {
             let info = "testKeyAgreement"
 
             let bob = try X3DH()
-            var bobPublicKeyMaterial = try bob.createPrekeyBundle(oneTimePrekeysCount: 0, renewSignedPrekey: false, prekeySigner: { $0 })
+            var bobPublicKeyMaterial = try bob.createPrekeyBundle(oneTimePrekeysCount: 0, renewSignedPrekey: false, prekeySigner: { Data($0) })
             let bobPrekeyBundle = bobPublicKeyMaterial.prekeyBundle()
 
             let alice = try X3DH()
@@ -51,7 +52,7 @@ final class X3DHTests: XCTestCase {
             let info = "testKeyAgreement"
 
             let bob = try X3DH()
-            var bobPublicKeyMaterial = try bob.createPrekeyBundle(oneTimePrekeysCount: 2, renewSignedPrekey: false, prekeySigner: { $0 })
+            var bobPublicKeyMaterial = try bob.createPrekeyBundle(oneTimePrekeysCount: 2, renewSignedPrekey: false, prekeySigner: { Data($0) })
             let bobPrekeyBundle = bobPublicKeyMaterial.prekeyBundle()
 
             let alice = try X3DH()

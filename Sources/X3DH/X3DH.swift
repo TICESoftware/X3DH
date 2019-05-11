@@ -1,7 +1,8 @@
+import Foundation
 import Sodium
 import HKDF
 
-public typealias Signatur = Bytes
+public typealias Signatur = Data
 public typealias PrekeySigner = (PublicKey) -> Signatur
 public typealias PrekeySignatureVerifier = (Signatur) -> Bool
 

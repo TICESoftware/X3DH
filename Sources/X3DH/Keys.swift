@@ -1,3 +1,4 @@
+import Foundation
 import Sodium
 
 public typealias KeyPair = KeyExchange.KeyPair
@@ -18,7 +19,7 @@ public struct KeyMaterial {
 public struct PublicKeyMaterial {
     let identityKey: PublicKey
     let signedPrekey: PublicKey
-    let prekeySignature: Bytes
+    let prekeySignature: Data
     var oneTimePrekeys: [PublicKey]
 
     mutating func prekeyBundle() -> PrekeyBundle {
@@ -30,6 +31,6 @@ public struct PublicKeyMaterial {
 public struct PrekeyBundle {
     let identityKey: PublicKey
     let signedPrekey: PublicKey
-    let prekeySignature: Bytes
+    let prekeySignature: Data
     let oneTimePrekey: PublicKey?
 }
