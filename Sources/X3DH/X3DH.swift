@@ -10,8 +10,8 @@ public class X3DH {
     let sodium = Sodium()
 
     private var keyMaterial: KeyMaterial
-    public var signedPrekey: PublicKey {
-        return keyMaterial.signedPrekeyPair.publicKey
+    public var signedPrekeyPair: KeyPair {
+        return keyMaterial.signedPrekeyPair
     }
 
     private struct DH {
