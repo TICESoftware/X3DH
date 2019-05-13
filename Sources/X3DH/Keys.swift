@@ -22,6 +22,13 @@ public struct PublicKeyMaterial {
     public let prekeySignature: Data
     public var oneTimePrekeys: [PublicKey]
 
+    public init(identityKey: PublicKey, signedPrekey: PublicKey, prekeySignature: Data, oneTimePrekeys: [PublicKey]) {
+        self.identityKey = identityKey
+        self.signedPrekey = signedPrekey
+        self.prekeySignature = prekeySignature
+        self.oneTimePrekeys = oneTimePrekeys
+    }
+
     public mutating func prekeyBundle() -> PrekeyBundle {
         let oneTimePrekey = oneTimePrekeys.popLast()
         return PrekeyBundle(identityKey: identityKey, signedPrekey: signedPrekey, prekeySignature: prekeySignature, oneTimePrekey: oneTimePrekey)
