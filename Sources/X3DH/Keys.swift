@@ -40,4 +40,11 @@ public struct PrekeyBundle {
     public let signedPrekey: PublicKey
     public let prekeySignature: Data
     public let oneTimePrekey: PublicKey?
+
+    public init(identityKey: PublicKey, signedPrekey: PublicKey, prekeySignature: Data, oneTimePrekey: PublicKey?) {
+        self.identityKey = identityKey
+        self.signedPrekey = signedPrekey
+        self.prekeySignature = prekeySignature
+        self.oneTimePrekey = oneTimePrekey
+    }
 }
