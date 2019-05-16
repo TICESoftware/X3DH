@@ -2,9 +2,9 @@ import Foundation
 import Sodium
 import HKDF
 
-public typealias Signatur = Data
-public typealias PrekeySigner = (PublicKey) throws -> Signatur
-public typealias PrekeySignatureVerifier = (Signatur) -> Bool
+public typealias Signature = Data
+public typealias PrekeySigner = (PublicKey) throws -> Signature
+public typealias PrekeySignatureVerifier = (Signature) -> Bool
 
 public class X3DH {
     let sodium = Sodium()
