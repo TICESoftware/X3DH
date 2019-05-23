@@ -4,15 +4,15 @@ import Sodium
 public typealias KeyPair = KeyExchange.KeyPair
 public typealias PublicKey = KeyExchange.PublicKey
 
-struct KeyMaterial {
+public struct KeyMaterial {
     let identityKeyPair: KeyPair
     var signedPrekeyPair: KeyPair
     var oneTimePrekeyPairs: [KeyPair]
 
-    init(identityKeyPair: KeyPair, signedPrekeyPair: KeyPair) {
+    init(identityKeyPair: KeyPair, signedPrekeyPair: KeyPair, oneTimePrekeyPairs: [KeyPair] = []) {
         self.identityKeyPair = identityKeyPair
         self.signedPrekeyPair = signedPrekeyPair
-        self.oneTimePrekeyPairs = []
+        self.oneTimePrekeyPairs = oneTimePrekeyPairs
     }
 }
 

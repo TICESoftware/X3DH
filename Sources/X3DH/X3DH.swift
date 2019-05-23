@@ -9,7 +9,7 @@ public typealias PrekeySignatureVerifier = (Signature) -> Bool
 public class X3DH {
     let sodium = Sodium()
 
-    private var keyMaterial: KeyMaterial
+    public var keyMaterial: KeyMaterial
     public var signedPrekeyPair: KeyPair {
         return keyMaterial.signedPrekeyPair
     }
@@ -37,6 +37,10 @@ public class X3DH {
             let signedPrekeyPair = sodium.keyExchange.keyPair() else { throw X3DHError.keyGenerationFailed }
 
         self.keyMaterial = KeyMaterial(identityKeyPair: identityKeyPair, signedPrekeyPair: signedPrekeyPair)
+    }
+
+    public init(identityKeyPair: KeyPair, signedPrekeyPair: KeyPair, oneTimePrekeyPairs: [KeyPair]) {
+        self.keyMaterial = KeyMaterial(identityKeyPair: identityKeyPair, signedPrekeyPair: signedPrekeyPair, oneTimePrekeyPairs: oneTimePrekeyPairs)
     }
 
     public func createPrekeyBundle(oneTimePrekeysCount: Int, renewSignedPrekey: Bool, prekeySigner: PrekeySigner) throws -> PublicKeyMaterial {
