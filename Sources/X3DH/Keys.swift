@@ -5,9 +5,9 @@ public typealias KeyPair = KeyExchange.KeyPair
 public typealias PublicKey = KeyExchange.PublicKey
 
 public struct KeyMaterial {
-    let identityKeyPair: KeyPair
-    var signedPrekeyPair: KeyPair
-    var oneTimePrekeyPairs: [KeyPair]
+    public let identityKeyPair: KeyPair
+    public var signedPrekeyPair: KeyPair
+    public var oneTimePrekeyPairs: [KeyPair]
 
     init(identityKeyPair: KeyPair, signedPrekeyPair: KeyPair, oneTimePrekeyPairs: [KeyPair] = []) {
         self.identityKeyPair = identityKeyPair
