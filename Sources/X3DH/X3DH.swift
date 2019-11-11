@@ -4,7 +4,7 @@ import HKDF
 
 public typealias Signature = Data
 public typealias PrekeySigner = (PublicKey) throws -> Signature
-public typealias PrekeySignatureVerifier = (Signature) -> Bool
+public typealias PrekeySignatureVerifier = (Signature) throws -> Bool
 
 public class X3DH {
     let sodium = Sodium()
@@ -62,7 +62,7 @@ public class X3DH {
     }
 
     public func initiateKeyAgreement(remotePrekeyBundle: PrekeyBundle, prekeySignatureVerifier: PrekeySignatureVerifier, info: String) throws -> KeyAgreementInitiation {
-        guard prekeySignatureVerifier(remotePrekeyBundle.prekeySignature) else {
+        guard try prekeySignatureVerifier(remotePrekeyBundle.prekeySignature) else {
             throw X3DHError.invalidPrekeySignature
         }
 
