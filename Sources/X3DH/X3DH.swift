@@ -2,6 +2,8 @@ import Foundation
 import Sodium
 import HKDF
 
+public typealias KeyPair = KeyExchange.KeyPair
+public typealias PublicKey = KeyExchange.PublicKey
 public typealias Signature = Data
 public typealias PrekeySigner = (PublicKey) throws -> Signature
 public typealias PrekeySignatureVerifier = (Signature) throws -> Bool
@@ -9,9 +11,9 @@ public typealias PrekeySignatureVerifier = (Signature) throws -> Bool
 public class X3DH {
     let sodium = Sodium()
 
-    public var keyMaterial: KeyMaterial
-    public var signedPrekeyPair: KeyPair {
-        return keyMaterial.signedPrekeyPair
+    public struct SignedPrekeyPair {
+        let keyPair: KeyPair
+        let signature: Signature
     }
 
     private struct DH {
@@ -22,9 +24,7 @@ public class X3DH {
     public struct KeyAgreementInitiation {
         public let sharedSecret: Bytes
         public let associatedData: Bytes
-        public let identityPublicKey: PublicKey
         public let ephemeralPublicKey: PublicKey
-        public let usedOneTimePrekey: PublicKey?
     }
 
     private enum Side {
@@ -32,66 +32,55 @@ public class X3DH {
         case responding
     }
 
-    public init() throws {
-        guard let identityKeyPair = sodium.keyExchange.keyPair(),
-            let signedPrekeyPair = sodium.keyExchange.keyPair() else { throw X3DHError.keyGenerationFailed }
-
-        self.keyMaterial = KeyMaterial(identityKeyPair: identityKeyPair, signedPrekeyPair: signedPrekeyPair)
+    public func generateIdentityKeyPair() throws -> KeyPair {
+        try generateKeyPair()
     }
 
-    public init(identityKeyPair: KeyPair, signedPrekeyPair: KeyPair, oneTimePrekeyPairs: [KeyPair]) {
-        self.keyMaterial = KeyMaterial(identityKeyPair: identityKeyPair, signedPrekeyPair: signedPrekeyPair, oneTimePrekeyPairs: oneTimePrekeyPairs)
+    public func generateSignedPrekeyPair(signer: PrekeySigner) throws -> SignedPrekeyPair {
+        let keyPair = try generateKeyPair()
+        let signature = try signer(keyPair.publicKey)
+        return SignedPrekeyPair(keyPair: keyPair, signature: signature)
     }
 
-    public func createPrekeyBundle(oneTimePrekeysCount: Int, renewSignedPrekey: Bool, prekeySigner: PrekeySigner) throws -> PublicKeyMaterial {
-        if renewSignedPrekey {
-            guard let newSignedPrekeyPair = sodium.keyExchange.keyPair() else { throw X3DHError.keyGenerationFailed }
-            keyMaterial.signedPrekeyPair = newSignedPrekeyPair
-        }
-
+    public func generateOneTimePrekeyPairs(count: Int) throws -> [KeyPair] {
         var oneTimePrekeyPairs = [KeyPair]()
-        for _ in 0..<oneTimePrekeysCount {
-            guard let oneTimePrekeyPair = sodium.keyExchange.keyPair() else { throw X3DHError.keyGenerationFailed }
-            oneTimePrekeyPairs.append(oneTimePrekeyPair)
+        for _ in 0..<count {
+            oneTimePrekeyPairs.append(try generateKeyPair())
         }
-        keyMaterial.oneTimePrekeyPairs = oneTimePrekeyPairs
-        let oneTimePrekeyPublicKeys = oneTimePrekeyPairs.map { $0.publicKey }
-
-        let prekeySignature = try prekeySigner(keyMaterial.signedPrekeyPair.publicKey)
-        return PublicKeyMaterial(identityKey: keyMaterial.identityKeyPair.publicKey, signedPrekey: keyMaterial.signedPrekeyPair.publicKey, prekeySignature: prekeySignature, oneTimePrekeys: oneTimePrekeyPublicKeys)
+        return oneTimePrekeyPairs
     }
 
-    public func initiateKeyAgreement(remotePrekeyBundle: PrekeyBundle, prekeySignatureVerifier: PrekeySignatureVerifier, info: String) throws -> KeyAgreementInitiation {
-        guard try prekeySignatureVerifier(remotePrekeyBundle.prekeySignature) else {
+    private func generateKeyPair() throws -> KeyPair {
+        guard let keyPair = sodium.keyExchange.keyPair() else { throw X3DHError.keyGenerationFailed }
+        return keyPair
+    }
+
+    public func initiateKeyAgreement(remoteIdentityKey: PublicKey, remotePrekey: PublicKey, prekeySignature: Data, remoteOneTimePrekey: PublicKey?, identityKeyPair: KeyPair, prekey: PublicKey, prekeySignatureVerifier: PrekeySignatureVerifier, info: String) throws -> KeyAgreementInitiation {
+        guard try prekeySignatureVerifier(prekeySignature) else {
             throw X3DHError.invalidPrekeySignature
         }
 
         guard let ephemeralKeyPair = sodium.keyExchange.keyPair() else { throw X3DHError.keyGenerationFailed }
 
-        let dh1 = DH(ownKeyPair: keyMaterial.identityKeyPair, remotePublicKey: remotePrekeyBundle.signedPrekey)
-        let dh2 = DH(ownKeyPair: ephemeralKeyPair, remotePublicKey: remotePrekeyBundle.identityKey)
-        let dh3 = DH(ownKeyPair: ephemeralKeyPair, remotePublicKey: remotePrekeyBundle.signedPrekey)
-        let dh4: DH? = remotePrekeyBundle.oneTimePrekey.map { DH(ownKeyPair: ephemeralKeyPair, remotePublicKey: $0) }
+        let dh1 = DH(ownKeyPair: identityKeyPair, remotePublicKey: remotePrekey)
+        let dh2 = DH(ownKeyPair: ephemeralKeyPair, remotePublicKey: remoteIdentityKey)
+        let dh3 = DH(ownKeyPair: ephemeralKeyPair, remotePublicKey: remotePrekey)
+        let dh4: DH? = remoteOneTimePrekey.map { DH(ownKeyPair: ephemeralKeyPair, remotePublicKey: $0) }
 
         let sk = try sharedSecret(DH1: dh1, DH2: dh2, DH3: dh3, DH4: dh4, side: .initiating, info: info)
 
         var ad = Bytes()
-        ad.append(contentsOf: keyMaterial.signedPrekeyPair.publicKey)
-        ad.append(contentsOf: remotePrekeyBundle.identityKey)
+        ad.append(contentsOf: prekey)
+        ad.append(contentsOf: remoteIdentityKey)
 
-        return KeyAgreementInitiation(sharedSecret: sk, associatedData: ad, identityPublicKey: keyMaterial.identityKeyPair.publicKey, ephemeralPublicKey: ephemeralKeyPair.publicKey, usedOneTimePrekey: remotePrekeyBundle.oneTimePrekey)
+        return KeyAgreementInitiation(sharedSecret: sk, associatedData: ad, ephemeralPublicKey: ephemeralKeyPair.publicKey)
     }
 
-    public func sharedSecretFromKeyAgreement(remoteIdentityPublicKey: PublicKey, remoteEphemeralPublicKey: PublicKey, usedOneTimePrekey: PublicKey?, info: String) throws -> Bytes {
-        let dh1 = DH(ownKeyPair: keyMaterial.signedPrekeyPair, remotePublicKey: remoteIdentityPublicKey)
-        let dh2 = DH(ownKeyPair: keyMaterial.identityKeyPair, remotePublicKey: remoteEphemeralPublicKey)
-        let dh3 = DH(ownKeyPair: keyMaterial.signedPrekeyPair, remotePublicKey: remoteEphemeralPublicKey)
-        let dh4: DH? = try usedOneTimePrekey.map { usedOneTimePrekey -> DH in
-            guard let oneTimePrekeyPairIndex = keyMaterial.oneTimePrekeyPairs.firstIndex(where: { $0.publicKey == usedOneTimePrekey }) else {
-                throw X3DHError.invalidOneTimePrekey
-            }
-            let oneTimePrekeyPair = keyMaterial.oneTimePrekeyPairs.remove(at: oneTimePrekeyPairIndex)
-            return DH(ownKeyPair: oneTimePrekeyPair, remotePublicKey: remoteEphemeralPublicKey)
+    public func sharedSecretFromKeyAgreement(remoteIdentityKey: PublicKey, remoteEphemeralKey: PublicKey, usedOneTimePrekeyPair: KeyPair?, identityKeyPair: KeyPair, prekeyPair: KeyPair, info: String) throws -> Bytes {
+        let dh1 = DH(ownKeyPair: prekeyPair, remotePublicKey: remoteIdentityKey)
+        let dh2 = DH(ownKeyPair: identityKeyPair, remotePublicKey: remoteEphemeralKey)
+        let dh3 = DH(ownKeyPair: prekeyPair, remotePublicKey: remoteEphemeralKey)
+        let dh4: DH? = usedOneTimePrekeyPair.map { DH(ownKeyPair: $0, remotePublicKey: remoteEphemeralKey)
         }
 
         return try sharedSecret(DH1: dh1, DH2: dh2, DH3: dh3, DH4: dh4, side: .responding, info: info)
