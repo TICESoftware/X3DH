@@ -32,6 +32,8 @@ public class X3DH {
         case responding
     }
 
+    public init() {}
+
     public func generateIdentityKeyPair() throws -> KeyPair {
         try generateKeyPair()
     }
