@@ -12,8 +12,8 @@ public class X3DH {
     let sodium = Sodium()
 
     public struct SignedPrekeyPair {
-        let keyPair: KeyPair
-        let signature: Signature
+        public let keyPair: KeyPair
+        public let signature: Signature
     }
 
     private struct DH {
