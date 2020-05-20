@@ -2,7 +2,22 @@
 
 This package implements the <a href="https://signal.org/docs/specifications/x3dh/">X3DH</a> key agreement protocol in Swift. The cryptographic operations are provided by <a href="https://github.com/jedisct1/libsodium">libsodium</a> entirely.
 
-# Usage
+## Installation
+### SPM
+`.package(url: "https://github.com/TICESoftware/X3DH.git", .upToNextMajor(from: "2.0.0"))`
+
+In order to build the library it is necessary to link libsodium. The <a href="https://github.com/jedisct1/libsodium">official repository</a> includes scripts to build binaries for specific platforms.
+
+`swift build -Xcc -I[header search path] -Xlinker -L[binary path]`
+
+When using Xcode you can set the header search path manually to include the libsodium header files and link the static libsodium library.
+
+### CodoaPods
+`pod 'X3DH'`
+
+This uses <a href="https://github.com/jedisct1/swift-sodium">`Sodium`</a> as a dependency which includes the pre-compiled libsodium library. No further setup necessary.
+
+## Usage
 
 Alice needs to retrieve some public keys from Bob that he has made public previously. She then calculates a shared secret and sends some information to Bob so that he can calculcate the shared secret on his side as well.
 
