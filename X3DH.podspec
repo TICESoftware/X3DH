@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name          = "X3DH"
-  s.version       = "2.0.4"
+  s.version       = "2.0.5"
   s.summary       = "X3DH key agreement protocol."
   s.platform      = :ios, "11.0"
   s.swift_version = "5.1"
@@ -14,7 +14,11 @@ Pod::Spec.new do |s|
 
   s.source_files  = "Sources/**/*"
 
-  s.dependency "Sodium"
+  #s.dependency "Sodium"
+  s.dependency 'Sodium-Fork'
   s.dependency "HKDF"
 
+  s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
+  s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
+  
 end
