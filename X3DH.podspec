@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
 
   s.name          = "X3DH"
-  s.version       = "2.0.5"
+  s.version       = "2.0.6"
   s.summary       = "X3DH key agreement protocol."
-  s.platform      = :ios, "11.0"
-  s.swift_version = "5.1"
+  s.platform      = :ios, "12.0"
+  s.swift_version = "5.0"
 
   s.homepage      = "https://ticeapp.com"
 
@@ -14,11 +14,10 @@ Pod::Spec.new do |s|
 
   s.source_files  = "Sources/**/*"
 
-  #s.dependency "Sodium"
-  s.dependency 'Sodium-Fork'
+  s.dependency "Sodium"
   s.dependency "HKDF"
 
   s.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
   s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
-  
+
 end
