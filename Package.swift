@@ -10,8 +10,8 @@ let package = Package(
             targets: ["X3DH"]),
     ],
     dependencies: [
-         .package(url: "https://github.com/jedisct1/swift-sodium", from: "0.9.0"),
-         .package(url: "https://github.com/TICESoftware/HKDF.git", from: "1.0.8"),
+        .package(url: "https://github.com/TICESoftware/swift-sodium.git", .branch("linux")),
+        .package(url: "https://github.com/TICESoftware/HKDF.git", .branch("linux")),
     ],
     targets: [
         .target(
