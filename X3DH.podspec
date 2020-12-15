@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name          = "X3DH"
-  s.version       = "2.0.7"
+  s.version       = "2.0.8"
   s.summary       = "X3DH key agreement protocol."
   s.platform      = :ios, "12.0"
   s.swift_version = "5.0"
